@@ -126,7 +126,7 @@
   /* Educational Cards */
   .lesson-card {
     @apply glass-card p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-[var(--shadow-large)]
-           cursor-pointer group;
+           cursor-pointer relative;
   }
 
   .lesson-card::before {
