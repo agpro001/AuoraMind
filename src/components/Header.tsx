@@ -21,11 +21,11 @@ export const Header: React.FC<HeaderProps> = ({ currentUser, onLogin, onLogout }
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 primary-gradient rounded-lg flex items-center justify-center text-white font-bold text-xl">
-              E
+              A
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Education Anywhere</h1>
-              <p className="text-xs text-muted-foreground">Learn without limits</p>
+              <h1 className="text-xl font-bold text-foreground">AuroraMind</h1>
+              <p className="text-xs text-muted-foreground">Knowledge that shines in every corner</p>
             </div>
           </div>
 
