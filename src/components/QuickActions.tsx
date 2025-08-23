@@ -1,6 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MessageCircle, BookOpen, BarChart3, Award, Settings, Play } from 'lucide-react';
+import { LessonBrowser } from './LessonBrowser';
+import { ProgressDashboard } from './ProgressDashboard';
 
 interface QuickActionsProps {
   onOpenChat: () => void;
@@ -8,13 +10,15 @@ interface QuickActionsProps {
 }
 
 export const QuickActions: React.FC<QuickActionsProps> = ({ onOpenChat, currentUser }) => {
+  const [activeView, setActiveView] = useState<string | null>(null);
+
   const actions = [
     {
       icon: Play,
       title: 'Continue Lesson',
       description: 'Pick up where you left off',
       color: 'primary',
-      onClick: () => console.log('Continue lesson')
+      onClick: () => setActiveView('lessons')
     },
     {
       icon: MessageCircle,
@@ -28,21 +32,21 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onOpenChat, currentU
       title: 'Browse Lessons',
       description: 'Explore all available content',
       color: 'success',
-      onClick: () => console.log('Browse lessons')
+      onClick: () => setActiveView('lessons')
     },
     {
       icon: BarChart3,
       title: 'View Progress',
       description: 'Track your learning journey',
       color: 'primary',
-      onClick: () => console.log('View progress')
+      onClick: () => setActiveView('progress')
     },
     {
       icon: Award,
       title: 'Achievements',
       description: 'See your badges and rewards',
       color: 'warning',
-      onClick: () => console.log('View achievements')
+      onClick: () => setActiveView('progress')
     },
     {
       icon: Settings,
@@ -52,6 +56,35 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onOpenChat, currentU
       onClick: () => console.log('Open settings')
     }
   ];
+
+  // If a view is active, show it instead of the quick actions
+  if (activeView === 'lessons') {
+    return (
+      <div className="w-full">
+        <button
+          onClick={() => setActiveView(null)}
+          className="mb-6 px-4 py-2 bg-muted/20 hover:bg-muted/30 rounded-lg transition-colors"
+        >
+          ← Back to Quick Actions
+        </button>
+        <LessonBrowser />
+      </div>
+    );
+  }
+
+  if (activeView === 'progress') {
+    return (
+      <div className="w-full">
+        <button
+          onClick={() => setActiveView(null)}
+          className="mb-6 px-4 py-2 bg-muted/20 hover:bg-muted/30 rounded-lg transition-colors"
+        >
+          ← Back to Quick Actions
+        </button>
+        <ProgressDashboard />
+      </div>
+    );
+  }
 
   const getColorClasses = (color: string) => {
     switch (color) {
@@ -80,11 +113,11 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onOpenChat, currentU
           <div
             key={index}
             onClick={action.onClick}
-            className="lesson-card cursor-pointer group stagger-item"
+            className="lesson-card cursor-pointer group stagger-item transform hover:scale-[1.02] transition-all duration-300"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
             <div className="flex items-start space-x-4">
-              <div className={`p-3 rounded-xl ${getColorClasses(action.color)} border transition-all duration-300 group-hover:scale-110`}>
+              <div className={`p-3 rounded-xl ${getColorClasses(action.color)} border transition-all duration-300 group-hover:scale-110 group-hover:rotate-3`}>
                 <action.icon className="w-6 h-6" />
               </div>
               <div className="flex-1">
@@ -102,13 +135,16 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onOpenChat, currentU
 
       {/* Daily Challenge Section */}
       <div className="mt-12">
-        <div className="glass-card p-8 text-center bg-gradient-to-r from-primary/5 to-secondary/5 border-2 border-primary/10">
-          <div className="text-4xl mb-4">🎯</div>
+        <div className="lesson-card p-8 text-center bg-gradient-to-r from-primary/5 to-secondary/5 border-2 border-primary/10 hover:scale-[1.01] transition-all duration-300">
+          <div className="text-4xl mb-4 animate-bounce">🎯</div>
           <h3 className="text-2xl font-bold mb-2">Daily Challenge</h3>
           <p className="text-muted-foreground mb-6">
             Complete today's 5-minute quiz to maintain your learning streak!
           </p>
-          <button className="px-6 py-3 primary-gradient text-white rounded-lg font-semibold hover:scale-105 transition-transform">
+          <button 
+            onClick={() => setActiveView('lessons')}
+            className="px-6 py-3 primary-gradient text-white rounded-lg font-semibold hover:scale-105 transition-transform"
+          >
             Start Challenge
           </button>
         </div>
