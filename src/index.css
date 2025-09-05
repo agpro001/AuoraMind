@@ -471,6 +471,137 @@ h1, h2, h3, h4, h5, h6 {
   animation: rotate3D 10s linear infinite;
 }
 
+/* Enhanced 3D Morphing Animations */
+@keyframes morphBounce {
+  0% {
+    transform: scale3d(1, 1, 1) rotateY(0deg);
+  }
+  30% {
+    transform: scale3d(1.1, 0.9, 1.1) rotateY(120deg);
+  }
+  60% {
+    transform: scale3d(0.9, 1.1, 0.9) rotateY(240deg);
+  }
+  100% {
+    transform: scale3d(1, 1, 1) rotateY(360deg);
+  }
+}
+
+@keyframes levitate {
+  0%, 100% {
+    transform: translateY(0px) rotateX(0deg) rotateZ(0deg);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  33% {
+    transform: translateY(-10px) rotateX(5deg) rotateZ(2deg);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+  66% {
+    transform: translateY(-15px) rotateX(-3deg) rotateZ(-1deg);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+  }
+}
+
+@keyframes holographicGlow {
+  0% {
+    box-shadow: 
+      0 0 20px hsl(var(--primary) / 0.4),
+      inset 0 0 20px hsl(var(--primary) / 0.1);
+  }
+  25% {
+    box-shadow: 
+      0 0 30px hsl(var(--secondary) / 0.5),
+      inset 0 0 30px hsl(var(--secondary) / 0.15);
+  }
+  50% {
+    box-shadow: 
+      0 0 40px hsl(var(--success) / 0.6),
+      inset 0 0 40px hsl(var(--success) / 0.2);
+  }
+  75% {
+    box-shadow: 
+      0 0 30px hsl(var(--warning) / 0.5),
+      inset 0 0 30px hsl(var(--warning) / 0.15);
+  }
+  100% {
+    box-shadow: 
+      0 0 20px hsl(var(--primary) / 0.4),
+      inset 0 0 20px hsl(var(--primary) / 0.1);
+  }
+}
+
+@keyframes dimensionalShift {
+  0% {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  }
+  25% {
+    transform: perspective(1000px) rotateX(10deg) rotateY(15deg) rotateZ(2deg);
+  }
+  50% {
+    transform: perspective(1000px) rotateX(-5deg) rotateY(25deg) rotateZ(-3deg);
+  }
+  75% {
+    transform: perspective(1000px) rotateX(15deg) rotateY(-10deg) rotateZ(1deg);
+  }
+  100% {
+    transform: perspective(1000px) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  }
+}
+
+.animate-morph-bounce {
+  animation: morphBounce 3s ease-in-out infinite;
+}
+
+.animate-levitate {
+  animation: levitate 4s ease-in-out infinite;
+}
+
+.animate-holographic-glow {
+  animation: holographicGlow 5s linear infinite;
+}
+
+.animate-dimensional-shift {
+  animation: dimensionalShift 8s ease-in-out infinite;
+}
+
+/* Enhanced Interactive Elements */
+.ultra-interactive {
+  transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.ultra-interactive::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, 
+    hsl(var(--primary)), 
+    hsl(var(--secondary)), 
+    hsl(var(--success)), 
+    hsl(var(--warning)));
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  animation: rotate3D 4s linear infinite;
+}
+
+.ultra-interactive:hover::before {
+  opacity: 0.3;
+}
+
+.ultra-interactive:hover {
+  transform: translateY(-10px) rotateX(10deg) rotateY(5deg) scale(1.05);
+  box-shadow: 
+    0 30px 60px rgba(0, 0, 0, 0.3),
+    0 0 40px hsl(var(--primary) / 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
 /* Utility Classes */
 .line-clamp-2 {
   display: -webkit-box;

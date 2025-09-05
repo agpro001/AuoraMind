@@ -10,6 +10,7 @@ import { TutorChat } from '../components/TutorChat';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { LoginModal } from '../components/LoginModal';
 import { ScrollReveal } from '../components/ScrollReveal';
+import { Footer } from '../components/Footer';
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -116,21 +117,24 @@ const Index = () => {
                   {
                     icon: "🤖",
                     title: "AI Tutor",
-                    description: "Get personalized help and explanations that work entirely offline"
+                    description: "Get personalized help and explanations that work entirely offline",
+                    animation: "animate-levitate"
                   },
                   {
                     icon: "📚",
                     title: "Interactive Lessons",
-                    description: "Engaging content with videos, quizzes, and hands-on activities"
+                    description: "Engaging content with videos, quizzes, and hands-on activities",
+                    animation: "animate-holographic-glow"
                   },
                   {
                     icon: "👨‍🏫",
                     title: "Teacher Dashboard", 
-                    description: "Comprehensive tools for managing classes and tracking progress"
+                    description: "Comprehensive tools for managing classes and tracking progress",
+                    animation: "animate-dimensional-shift"
                   }
                 ].map((feature, index) => (
-                  <div key={index} className="lesson-card stagger-item">
-                    <div className="text-4xl mb-4">{feature.icon}</div>
+                  <div key={index} className={`lesson-card stagger-item ultra-interactive ${feature.animation}`}>
+                    <div className="text-4xl mb-4 animate-morph-bounce">{feature.icon}</div>
                     <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                     <p className="text-muted-foreground">{feature.description}</p>
                   </div>
@@ -140,6 +144,11 @@ const Index = () => {
           </section>
         </ScrollReveal>
       </main>
+
+      {/* Footer */}
+      <ScrollReveal delay={1000}>
+        <Footer />
+      </ScrollReveal>
 
       {/* Floating Action Button */}
       <button 
