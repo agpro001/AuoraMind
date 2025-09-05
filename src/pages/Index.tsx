@@ -11,6 +11,7 @@ import { LoadingScreen } from '../components/LoadingScreen';
 import { LoginModal } from '../components/LoginModal';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { Footer } from '../components/Footer';
+import { FloatingBooksBackground } from '../components/FloatingBooksBackground';
 
 const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -51,8 +52,9 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header 
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      <FloatingBooksBackground />
+      <Header
         currentUser={currentUser} 
         onLogin={() => setShowLogin(true)} 
         onLogout={handleLogout}
