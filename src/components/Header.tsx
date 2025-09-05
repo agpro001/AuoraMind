@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Globe, Settings, User, LogOut, Menu, X } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface HeaderProps {
   currentUser: any;
@@ -41,6 +42,9 @@ export const Header: React.FC<HeaderProps> = ({ currentUser, onLogin, onLogout }
 
           {/* Right Side Controls */}
           <div className="flex items-center space-x-4">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Language Selector */}
             <div className="relative">
               <button className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-muted/20 transition-colors">
