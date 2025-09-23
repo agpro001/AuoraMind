@@ -14,6 +14,7 @@ import { Footer } from '../components/Footer';
 import { FloatingBooksBackground } from '../components/FloatingBooksBackground';
 
 const Index = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -47,6 +48,16 @@ const Index = () => {
     localStorage.removeItem('currentUser');
   };
 
+  const handleGetStarted = () => {
+    if (currentUser) {
+      // User is already logged in, navigate to courses
+      navigate('/courses');
+    } else {
+      // User needs to log in first
+      setShowLogin(true);
+    }
+  };
+
   if (isLoading) {
     return <LoadingScreen />;
   }
@@ -63,7 +74,7 @@ const Index = () => {
       <main className="relative">
         {/* Hero Section */}
         <ScrollReveal>
-          <Hero onGetStarted={() => setShowLogin(true)} />
+          <Hero onGetStarted={handleGetStarted} />
         </ScrollReveal>
 
         {/* Status Section */}
