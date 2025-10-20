@@ -472,6 +472,17 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* Animation Classes */
 .animate-slide-in-left {
   animation: slideInLeft 0.5s ease-out forwards;
@@ -495,6 +506,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .animate-pulse-3d {
   animation: pulse3D 2s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slideUpFade 0.5s ease-out forwards;
 }
 
 .animate-rotate-3d {

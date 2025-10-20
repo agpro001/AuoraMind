@@ -1,14 +1,13 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Mic, MicOff, Volume2, VolumeX, RotateCcw, Lightbulb } from 'lucide-react';
+import { X, Send, Mic, MicOff, Sparkles, BookOpen, Zap } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
   type: 'user' | 'tutor';
   content: string;
   timestamp: Date;
-  confidence?: number;
-  steps?: string[];
 }
 
 interface TutorChatProps {
@@ -17,27 +16,19 @@ interface TutorChatProps {
 }
 
 export const TutorChat: React.FC<TutorChatProps> = ({ onClose, currentUser }) => {
+  const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       type: 'tutor',
-      content: `Hello${currentUser ? ` ${currentUser.name}` : ''}! I'm your AI tutor. I can help you with explanations, hints, step-by-step solutions, and practice questions. What would you like to learn about today?`,
+      content: `Hello${currentUser ? ` ${currentUser.name}` : ''}! 👋 I'm your AI tutor powered by advanced AI. I can help you understand any topic, solve problems step-by-step, and provide real-world examples. What would you like to learn today?`,
       timestamp: new Date()
     }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [mode, setMode] = useState<'explain' | 'hint' | 'solve' | 'check' | 'practice'>('explain');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const modes = [
-    { key: 'explain', label: 'Explain', icon: '💡' },
-    { key: 'hint', label: 'Hint', icon: '🔍' },
-    { key: 'solve', label: 'Solve Step-by-Step', icon: '📝' },
-    { key: 'check', label: 'Check Answer', icon: '✓' },
-    { key: 'practice', label: 'Practice Question', icon: '🎯' }
-  ];
 
   useEffect(() => {
     scrollToBottom();
@@ -47,74 +38,8 @@ export const TutorChat: React.FC<TutorChatProps> = ({ onClose, currentUser }) =>
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const generateTutorResponse = (userMessage: string, selectedMode: string): Message => {
-    // Simulate AI tutor responses based on mode
-    let response = '';
-    let steps: string[] = [];
-    let confidence = 0.85 + Math.random() * 0.14; // Random confidence between 0.85-0.99
-
-    switch (selectedMode) {
-      case 'explain':
-        response = `Great question! Let me explain this concept step by step. ${userMessage.toLowerCase().includes('math') ? 'In mathematics, we often break down problems into smaller, manageable parts.' : 'This is an important topic that builds on fundamental concepts.'} 
-
-The key principle here is understanding the underlying logic. Would you like me to provide a specific example or go deeper into any particular aspect?`;
-        break;
-      
-      case 'hint':
-        response = `Here's a helpful hint: Think about what you already know about this topic. Often the answer lies in applying basic principles you've already learned. 
-
-Try asking yourself: What information do I have? What am I trying to find? What steps might connect these two points?
-
-Would you like another hint, or are you ready to try solving it yourself?`;
-        break;
-      
-      case 'solve':
-        response = `Let me solve this step-by-step for you:`;
-        steps = [
-          'First, identify what we know and what we need to find',
-          'Apply the relevant formula or principle',
-          'Substitute the known values',
-          'Perform the calculations carefully',
-          'Check our answer to make sure it makes sense'
-        ];
-        break;
-      
-      case 'check':
-        response = `Let me check your answer! Based on what you've shown me, your approach looks ${Math.random() > 0.3 ? 'correct' : 'mostly correct with a small adjustment needed'}. 
-
-${Math.random() > 0.5 ? 'Great job following the proper steps!' : 'Consider double-checking your calculation in step 3.'} 
-
-Would you like me to explain any part in more detail?`;
-        break;
-      
-      case 'practice':
-        response = `Here's a practice question for you:
-
-If you're working on math: "A rectangle has a length of 12 units and a width of 8 units. What is its area and perimeter?"
-
-If you're studying science: "Explain why ice floats on water using what you know about density."
-
-Take your time and try to work through it. I'm here if you need hints!`;
-        break;
-      
-      default:
-        response = `I understand you'd like help with "${userMessage}". I'm working entirely offline using my local knowledge base. While I strive to be accurate, please let me know if something doesn't seem right!
-
-How can I best assist you with this topic?`;
-    }
-
-    return {
-      id: Date.now().toString(),
-      type: 'tutor',
-      content: response,
-      timestamp: new Date(),
-      confidence,
-      steps: steps.length > 0 ? steps : undefined
-    };
-  };
-
-  const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -127,12 +52,49 @@ How can I best assist you with this topic?`;
     setInputValue('');
     setIsLoading(true);
 
-    // Simulate AI processing time
-    setTimeout(() => {
-      const tutorResponse = generateTutorResponse(inputValue, mode);
+    try {
+      const conversationHistory = [...messages, userMessage].map(msg => ({
+        role: msg.type === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      }));
+
+      const { data, error } = await supabase.functions.invoke('ai-tutor', {
+        body: { 
+          messages: conversationHistory,
+          includeWebSearch: true 
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        toast({
+          title: "Error",
+          description: data.error,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const tutorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'tutor',
+        content: data.content,
+        timestamp: new Date()
+      };
+
       setMessages(prev => [...prev, tutorResponse]);
+    } catch (error) {
+      console.error('Error calling AI tutor:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get response from AI tutor. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000 + Math.random() * 2000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -144,101 +106,98 @@ How can I best assist you with this topic?`;
 
   const toggleListening = () => {
     setIsListening(!isListening);
-    // In a real implementation, this would integrate with Web Speech API
+    toast({
+      title: "Voice Input",
+      description: isListening ? "Voice input stopped" : "Voice input started (feature coming soon)",
+    });
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="glass-card w-full max-w-4xl h-[80vh] flex flex-col animate-scale-in">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border/20">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center text-2xl">
-              🤖
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+      <div className="glass-card w-full max-w-5xl h-[85vh] flex flex-col animate-scale-in shadow-2xl">
+        {/* Enhanced Header with gradient */}
+        <div className="relative flex items-center justify-between p-6 border-b border-border/30 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10">
+          <div className="flex items-center space-x-4">
+            <div className="relative w-14 h-14">
+              <div className="absolute inset-0 bg-gradient-primary rounded-2xl animate-pulse-3d opacity-20"></div>
+              <div className="relative w-full h-full bg-gradient-primary rounded-2xl flex items-center justify-center text-3xl shadow-lg">
+                🤖
+              </div>
             </div>
             <div>
-              <h3 className="text-xl font-bold">AI Tutor</h3>
-              <p className="text-sm text-muted-foreground">Always here to help • Offline</p>
+              <h3 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">AI Tutor</h3>
+              <div className="flex items-center space-x-2 mt-1">
+                <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
+                <p className="text-sm text-muted-foreground">Powered by Advanced AI • Real-time Learning</p>
+              </div>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-muted/20 transition-colors"
+            className="p-2 rounded-xl hover:bg-muted/30 transition-all duration-300 hover:rotate-90"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        {/* Mode Selector */}
-        <div className="p-4 border-b border-border/20">
+        {/* Feature Pills */}
+        <div className="px-6 py-4 border-b border-border/20 bg-card/30">
           <div className="flex flex-wrap gap-2">
-            {modes.map((modeOption) => (
-              <button
-                key={modeOption.key}
-                onClick={() => setMode(modeOption.key as any)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  mode === modeOption.key
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted/20 hover:bg-muted/30'
-                }`}
-              >
-                <span className="mr-1">{modeOption.icon}</span>
-                {modeOption.label}
-              </button>
-            ))}
+            <div className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 flex items-center space-x-2 text-sm">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span>Step-by-Step Solutions</span>
+            </div>
+            <div className="px-4 py-2 rounded-full bg-secondary/10 border border-secondary/20 flex items-center space-x-2 text-sm">
+              <BookOpen className="w-4 h-4 text-secondary" />
+              <span>Real Study Materials</span>
+            </div>
+            <div className="px-4 py-2 rounded-full bg-success/10 border border-success/20 flex items-center space-x-2 text-sm">
+              <Zap className="w-4 h-4 text-success" />
+              <span>Instant Answers</span>
+            </div>
           </div>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.map((message) => (
+        {/* Messages with enhanced styling */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {messages.map((message, index) => (
             <div
               key={message.id}
-              className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`}
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div
-                className={`max-w-[80%] p-4 rounded-2xl ${
+                className={`max-w-[85%] p-5 rounded-2xl transition-all duration-300 hover:scale-[1.02] ${
                   message.type === 'user'
-                    ? 'bg-primary text-primary-foreground ml-4'
-                    : 'glass border bg-card/50 mr-4'
+                    ? 'bg-gradient-primary text-primary-foreground ml-4 shadow-lg'
+                    : 'glass border bg-card/60 mr-4 shadow-md'
                 }`}
               >
-                <div className="whitespace-pre-wrap">{message.content}</div>
+                <div className="whitespace-pre-wrap leading-relaxed">{message.content}</div>
                 
-                {message.steps && (
-                  <div className="mt-3 space-y-2">
-                    {message.steps.map((step, index) => (
-                      <div key={index} className="flex items-start space-x-2 text-sm">
-                        <span className="bg-primary/20 text-primary rounded px-2 py-1 text-xs font-medium min-w-[24px] text-center">
-                          {index + 1}
-                        </span>
-                        <span>{step}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {message.confidence && (
-                  <div className="mt-2 pt-2 border-t border-border/20 text-xs text-muted-foreground">
-                    Confidence: {Math.round(message.confidence * 100)}%
-                  </div>
-                )}
-                
-                <div className="text-xs opacity-60 mt-2">
-                  {message.timestamp.toLocaleTimeString()}
+                <div className="text-xs opacity-70 mt-3 flex items-center space-x-2">
+                  <span>{message.timestamp.toLocaleTimeString()}</span>
+                  {message.type === 'tutor' && (
+                    <span className="flex items-center space-x-1">
+                      <Sparkles className="w-3 h-3" />
+                      <span>AI Generated</span>
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
           ))}
           
           {isLoading && (
-            <div className="flex justify-start">
-              <div className="glass border bg-card/50 p-4 rounded-2xl mr-4">
-                <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
-                  <span className="text-sm text-muted-foreground ml-2">Thinking...</span>
+            <div className="flex justify-start animate-slide-up">
+              <div className="glass border bg-card/60 p-5 rounded-2xl mr-4 shadow-md">
+                <div className="flex items-center space-x-3">
+                  <div className="flex space-x-1">
+                    <div className="w-3 h-3 bg-primary rounded-full animate-bounce"></div>
+                    <div className="w-3 h-3 bg-secondary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-3 h-3 bg-success rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                  <span className="text-sm text-muted-foreground">AI is thinking deeply...</span>
                 </div>
               </div>
             </div>
@@ -247,24 +206,25 @@ How can I best assist you with this topic?`;
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="p-6 border-t border-border/20">
+        {/* Enhanced Input */}
+        <div className="p-6 border-t border-border/30 bg-gradient-to-t from-card/50 to-transparent">
           <div className="flex items-end space-x-3">
             <div className="flex-1">
               <textarea
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={`Ask me anything in ${modes.find(m => m.key === mode)?.label} mode...`}
-                className="w-full p-3 border border-border rounded-lg resize-none bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                placeholder="Ask me anything... I'm here to help you learn! 🚀"
+                className="w-full p-4 border-2 border-border/50 rounded-2xl resize-none bg-background/80 backdrop-blur-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all duration-300 shadow-inner"
                 rows={2}
+                disabled={isLoading}
               />
             </div>
             <div className="flex flex-col space-y-2">
               <button
                 onClick={toggleListening}
-                className={`p-3 rounded-lg transition-colors ${
-                  isListening ? 'bg-error text-error-foreground' : 'bg-muted/20 hover:bg-muted/30'
+                className={`p-4 rounded-xl transition-all duration-300 hover:scale-110 ${
+                  isListening ? 'bg-error text-error-foreground shadow-lg shadow-error/30' : 'bg-muted/30 hover:bg-muted/50'
                 }`}
                 title={isListening ? 'Stop listening' : 'Voice input'}
               >
@@ -272,8 +232,8 @@ How can I best assist you with this topic?`;
               </button>
               <button
                 onClick={handleSendMessage}
-                disabled={!inputValue.trim()}
-                className="p-3 bg-primary text-primary-foreground rounded-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!inputValue.trim() || isLoading}
+                className="p-4 bg-gradient-primary text-primary-foreground rounded-xl hover:scale-110 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-primary/30"
                 title="Send message"
               >
                 <Send className="w-5 h-5" />
@@ -281,8 +241,15 @@ How can I best assist you with this topic?`;
             </div>
           </div>
           
-          <div className="mt-2 text-xs text-muted-foreground text-center">
-            Running offline • Press Enter to send • Shift+Enter for new line
+          <div className="mt-3 text-xs text-muted-foreground text-center flex items-center justify-center space-x-4">
+            <span className="flex items-center space-x-1">
+              <Sparkles className="w-3 h-3" />
+              <span>Powered by AI</span>
+            </span>
+            <span>•</span>
+            <span>Press Enter to send</span>
+            <span>•</span>
+            <span>Shift+Enter for new line</span>
           </div>
         </div>
       </div>
