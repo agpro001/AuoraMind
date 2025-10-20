@@ -113,10 +113,10 @@ export const TutorChat: React.FC<TutorChatProps> = ({ onClose, currentUser }) =>
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
-      <div className="glass-card w-full max-w-5xl h-[85vh] flex flex-col animate-scale-in shadow-2xl">
+    <div className="fixed inset-0 bg-background z-50 flex flex-col animate-fade-in">
+      <div className="w-full h-full flex flex-col animate-scale-in">
         {/* Enhanced Header with gradient */}
-        <div className="relative flex items-center justify-between p-6 border-b border-border/30 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10">
+        <div className="relative flex items-center justify-between p-6 border-b border-border/30 bg-gradient-to-r from-primary/10 via-secondary/10 to-primary/10 shrink-0">
           <div className="flex items-center space-x-4">
             <div className="relative w-14 h-14">
               <div className="absolute inset-0 bg-gradient-primary rounded-2xl animate-pulse-3d opacity-20"></div>
@@ -141,7 +141,7 @@ export const TutorChat: React.FC<TutorChatProps> = ({ onClose, currentUser }) =>
         </div>
 
         {/* Feature Pills */}
-        <div className="px-6 py-4 border-b border-border/20 bg-card/30">
+        <div className="px-6 py-4 border-b border-border/20 bg-card/30 shrink-0">
           <div className="flex flex-wrap gap-2">
             <div className="px-4 py-2 rounded-full bg-primary/10 border border-primary/20 flex items-center space-x-2 text-sm">
               <Sparkles className="w-4 h-4 text-primary" />
@@ -207,7 +207,7 @@ export const TutorChat: React.FC<TutorChatProps> = ({ onClose, currentUser }) =>
         </div>
 
         {/* Enhanced Input */}
-        <div className="p-6 border-t border-border/30 bg-gradient-to-t from-card/50 to-transparent">
+        <div className="p-6 border-t border-border/30 bg-gradient-to-t from-card/50 to-transparent shrink-0">
           <div className="flex items-end space-x-3">
             <div className="flex-1">
               <textarea

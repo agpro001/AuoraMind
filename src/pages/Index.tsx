@@ -12,6 +12,9 @@ import { LoginModal } from '../components/LoginModal';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { Footer } from '../components/Footer';
 import { FloatingBooksBackground } from '../components/FloatingBooksBackground';
+import { StudyMaterialBrowser } from '../components/StudyMaterialBrowser';
+import { MCQTest } from '../components/MCQTest';
+import { VirtualAssistant } from '../components/VirtualAssistant';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -19,6 +22,9 @@ const Index = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [showStudyMaterial, setShowStudyMaterial] = useState(false);
+  const [showMCQTest, setShowMCQTest] = useState(false);
+  const [showAssistant, setShowAssistant] = useState(false);
 
   useEffect(() => {
     // Simulate app initialization
@@ -126,31 +132,45 @@ const Index = () => {
               </div>
               
               <div className="grid md:grid-cols-3 gap-8">
-                {[
+              {[
                   {
                     icon: "🤖",
                     title: "AI Tutor",
-                    description: "Get personalized help and explanations that work entirely offline",
-                    animation: "animate-levitate"
+                    description: "Get personalized help and explanations with real AI",
+                    animation: "animate-levitate",
+                    onClick: () => setIsChatOpen(true)
                   },
                   {
                     icon: "📚",
-                    title: "Interactive Lessons",
-                    description: "Engaging content with videos, quizzes, and hands-on activities",
-                    animation: "animate-holographic-glow"
+                    title: "Study Materials",
+                    description: "Access comprehensive materials for all boards and classes",
+                    animation: "animate-holographic-glow",
+                    onClick: () => setShowStudyMaterial(true)
                   },
                   {
-                    icon: "👨‍🏫",
-                    title: "Teacher Dashboard", 
-                    description: "Comprehensive tools for managing classes and tracking progress",
-                    animation: "animate-dimensional-shift"
+                    icon: "📝",
+                    title: "MCQ Tests", 
+                    description: "Practice with mock tests and track your progress",
+                    animation: "animate-dimensional-shift",
+                    onClick: () => setShowMCQTest(true)
+                  },
+                  {
+                    icon: "🎯",
+                    title: "Virtual Assistant", 
+                    description: "AI-powered learning assistant to guide your journey",
+                    animation: "animate-levitate",
+                    onClick: () => setShowAssistant(true)
                   }
                 ].map((feature, index) => (
-                  <div key={index} className={`lesson-card stagger-item ultra-interactive ${feature.animation}`}>
+                  <button 
+                    key={index} 
+                    onClick={feature.onClick}
+                    className={`lesson-card stagger-item ultra-interactive ${feature.animation} text-left w-full`}
+                  >
                     <div className="text-4xl mb-4 animate-morph-bounce">{feature.icon}</div>
                     <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
                     <p className="text-muted-foreground">{feature.description}</p>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -183,6 +203,27 @@ const Index = () => {
       {isChatOpen && (
         <TutorChat 
           onClose={() => setIsChatOpen(false)}
+          currentUser={currentUser}
+        />
+      )}
+
+      {showStudyMaterial && (
+        <StudyMaterialBrowser 
+          onClose={() => setShowStudyMaterial(false)}
+        />
+      )}
+
+      {showMCQTest && (
+        <MCQTest 
+          onClose={() => setShowMCQTest(false)}
+          subject="Mathematics"
+          chapter="Algebra"
+        />
+      )}
+
+      {showAssistant && (
+        <VirtualAssistant 
+          onClose={() => setShowAssistant(false)}
           currentUser={currentUser}
         />
       )}
